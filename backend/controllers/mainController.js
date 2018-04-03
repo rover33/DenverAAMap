@@ -2,7 +2,7 @@ const request = require('request');
 const cheerio = require('cheerio');
 let db = require('../models/index');
 
-let getMeetings = (req, res)=>{
+let getMeetingsTest = (req, res)=>{
     db.query('SELECT * FROM meeting WHERE day = "Sunday" AND time > "18:00:00"',(err,results)=>{
         if(err){
             console.log('there has been an error getting meetings:',err);
@@ -11,6 +11,11 @@ let getMeetings = (req, res)=>{
             res.json(results);
         }
     })
+}
+
+let getMeetings = (req, res)=>{
+    console.log('will get meetings!',req.query);
+    res.send(req.query);
 }
 
 
@@ -79,5 +84,6 @@ let updateMeetings = (req, res)=>{
 }
 
 
-module.exports.getMeetings = getMeetings;
+module.exports.getMeetingsTest = getMeetingsTest;
 module.exports.updateMeetings = updateMeetings;
+module.exports.getMeetings = getMeetings;

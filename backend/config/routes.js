@@ -1,8 +1,11 @@
 const router = require('express').Router();
 const mainController = require('../controllers/mainController');
 
-router.route('/meetings')
+router.route('/meetings?*')
     .get(mainController.getMeetings);
+
+router.route('/meetings')
+    .get(mainController.getMeetingsTest);
 
 router.route('/update')
     .get(mainController.updateMeetings);
