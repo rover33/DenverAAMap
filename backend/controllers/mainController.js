@@ -2,12 +2,19 @@ const request = require('request');
 const cheerio = require('cheerio');
 let db = require('../models/index');
 
-let Meetings = (req, res)=>{
-    db.query('SELECT * FROM meeting')
+let getMeetings = (req, res)=>{
+    db.query('SELECT * FROM meeting WHERE day = "Sunday" AND time > "18:00:00"',(err,results)=>{
+        if(err){
+            console.log('there has been an error getting meetings:',err);
+        }else{
+            console.log('success!',results);
+            res.json(results);
+        }
+    })
 }
 
 
-let getMeetings = (req, res)=>{
+let updateMeetings = (req, res)=>{
     var settings = {
         url: "http://www.daccaa.org/query.asp",
         form: {
@@ -73,3 +80,4 @@ let getMeetings = (req, res)=>{
 
 
 module.exports.getMeetings = getMeetings;
+module.exports.updateMeetings = updateMeetings;
