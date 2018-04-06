@@ -28,7 +28,7 @@ let shouldUpdate = (req,res,next)=>{
         if(err){
             console.log('error getting updated time:',err);
         }else{
-            if(Date.now()>new Date(results[0].created)+3600000){
+            if(!results[0]||Date.now()>new Date(results[0].created)+3600000){
                 updateMeetings(req,res,next);
             }else{
                 return next();
