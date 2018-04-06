@@ -2,17 +2,6 @@ const request = require('request');
 const cheerio = require('cheerio');
 let db = require('../models/index');
 
-let getMeetingsTest = (req, res)=>{
-    db.query('SELECT * FROM meeting WHERE day = "Sunday" AND time > "18:00:00"',(err,results)=>{
-        if(err){
-            console.log('there has been an error getting meetings:',err);
-        }else{
-            console.log('success!',results);
-            res.json(results);
-        }
-    })
-}
-
 let getMeetings = (req, res)=>{
     console.log('will get meetings!',req.query);
     console.log(typeof(req.query.days));
@@ -34,8 +23,21 @@ let getMeetings = (req, res)=>{
     });
 }
 
+let shouldUpdate = (req,res,next)=>{
+    db.query('SELECT created FROM meeting LIMIT 1',(err, results)=>{
+        if(err){
+            console.log('error getting updated time:',err);
+        }else{
+            if(Date.now()>new Date(results[0].created)+3600000){
+                updateMeetings(req,res,next);
+            }else{
+                return next();
+            }
+        }
+    })
+}
 
-let updateMeetings = (req, res)=>{
+let updateMeetings = (req, res, next)=>{
     var settings = {
         url: "http://www.daccaa.org/query.asp",
         form: {
@@ -74,9 +76,9 @@ let updateMeetings = (req, res)=>{
                     }
                 }
                 console.log(...meetingArray);
-                let mtgQueryStr=`INSERT INTO meeting(day, time, group_name, address, city) VALUES`;
+                let mtgQueryStr=`INSERT INTO meeting(day, time, group_name, address, city, created) VALUES`;
                 meetingArray.forEach((meeting)=>{
-                    mtgQueryStr+=`("${meeting.day}","${meeting.time}","${meeting.groupName}","${meeting.address}","${meeting.city}"),`
+                    mtgQueryStr+=`("${meeting.day}","${meeting.time}","${meeting.groupName}","${meeting.address}","${meeting.city}",null),`
                 })
                 mtgQueryStr=mtgQueryStr.slice(0,-1);
                 db.query(mtgQueryStr,(err,results)=>{
@@ -89,7 +91,7 @@ let updateMeetings = (req, res)=>{
                                 console.log("error removing duplicates:",err);
                             }else{
                                 console.log("successfully deleted old results",results);
-                                res.send(body);
+                                return next();
                             }
                         })
                     }
@@ -99,7 +101,5 @@ let updateMeetings = (req, res)=>{
 
 }
 
-
-module.exports.getMeetingsTest = getMeetingsTest;
-module.exports.updateMeetings = updateMeetings;
 module.exports.getMeetings = getMeetings;
+module.exports.shouldUpdate = shouldUpdate;
