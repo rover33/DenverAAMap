@@ -15,7 +15,23 @@ let getMeetingsTest = (req, res)=>{
 
 let getMeetings = (req, res)=>{
     console.log('will get meetings!',req.query);
-    res.send(req.query);
+    console.log(typeof(req.query.days));
+    let queryString = `SELECT day, time, group_name, address, city FROM meeting ${req.query&&(req.query.days||req.query.before||req.query.after)?`WHERE`:''}`;
+    let dayString = req.query.days?` day IN ('${req.query.days.replace(",","','")}')`:``;
+    let afterString = req.query.after?` time >= '${req.query.after.slice(0,2)+':'+req.query.after.slice(2) +':00'}'`:'';
+    let beforeString = req.query.before?` time <= '${req.query.before.slice(0,2)+':'+req.query.before.slice(2) +':00'}'`:'';
+    dayString+=afterString||beforeString?' AND':'';
+    afterString+=afterString&&beforeString?' AND':'';
+    queryString+=dayString+afterString+beforeString;
+    console.log(queryString);
+    db.query(queryString,(err,meetings)=>{
+        if(err){
+            console.log('error grabbing meetings',err);
+        }else{
+            console.log('meetings',meetings);
+            res.send(meetings);
+        }
+    });
 }
 
 
